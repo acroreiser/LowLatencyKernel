@@ -204,6 +204,13 @@ config CPU_FREQ_GOV_INTERACTIVE
 
 	  If in doubt, say N.
 
+config CPU_FREQ_GOV_INTERACTIVEX
+ 	tristate "'interactiveX' cpufreq policy governor"
+ 	help
+ 	  'interactiveX' - Modified version of interactive with sleep+wake code.
+ 
+ 	   If in doubt, say N.
+
 config CPU_FREQ_GOV_LAZY
         tristate "'lazy' cpufreq governor"
         depends on CPU_FREQ
