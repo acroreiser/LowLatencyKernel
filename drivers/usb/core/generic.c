@@ -84,23 +84,6 @@ int usb_choose_configuration(struct usb_device *udev)
 			continue;
 #endif
 
-		/*
-		 * The next test may not be as effective as it should be.
-		 * Some hubs have errors in their descriptor, claiming
-		 * to be self-powered when they are really bus-powered.
-		 * We will overestimate the amount of current such hubs
-		 * make available for each port.
-		 *
-		 * This is a fairly benign sort of failure.  It won't
-		 * cause us to reject configurations that we should have
-		 * accepted.
-		 */
-
-		/* Rule out configs that draw too much bus current */
-		if (c->desc.bMaxPower * 2 > udev->bus_mA) {
-			insufficient_power++;
-			continue;
-		}
 
 		/* When the first config's first interface is one of Microsoft's
 		 * pet nonstandard Ethernet-over-USB protocols, ignore it unless
