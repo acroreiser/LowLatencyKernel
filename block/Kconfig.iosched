@@ -40,6 +40,20 @@ config IOSCHED_TRIPNDROID
  	  it uses deadlines to ensure some fairness. The scheduler is build
  	  to keep a minimum overhead. It is mainly build for mobile devices.
  
+config IOSCHED_VR
+	tristate "V(R) I/O scheduler"
+ 	default n
+ 	---help---
+	The algorithm:
+
+ 	The next request is decided based on its distance from the last
+ 	request, with a multiplicative penalty of `rev_penalty' applied
+ 	for reversing the head direction. A rev_penalty of 1 means SSTF
+ 	behaviour. As this variable is increased, the algorithm approaches
+ 	pure SCAN. Setting rev_penalty to 0 forces SCAN.
+
+	 Async and synch requests are not treated seperately. Instead we
+	 rely on deadlines to ensure fairness.
 
 config IOSCHED_ROW
 	tristate "ROW I/O scheduler"
