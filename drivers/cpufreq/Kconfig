@@ -124,6 +124,23 @@ config CPU_FREQ_DEFAULT_GOV_INTERACTIVE
 	  loading your cpufreq low-level hardware driver, using the
 	  'interactive' governor for latency-sensitive workloads.
 
+config CPU_FREQ_DEFAULT_GOV_INTERACTIVEX
+	bool "interactivex"
+	select CPU_FREQ_GOV_INTERACTIVEX
+	help
+ 	  'interactiveX' - Modified version of interactive with sleep+wake code.
+
+config CPU_FREQ_DEFAULT_GOV_ELEMENTALX
+	bool "elementalx"
+	select CPU_FREQ_GOV_ELEMENTALX
+	help
+ 	  'elementalx' - This driver adds a dynamic cpufreq policy governor.
+ 
+ 	  To compile this driver as a module, choose M here: the
+ 	  module will be called cpufreq_elementalx.
+ 
+ 	  For details, take a look at linux/Documentation/cpu-freq.
+
 config CPU_FREQ_DEFAULT_GOV_SMARTASS2
 	bool "smartass2"
 	select CPU_FREQ_GOV_SMARTASS2
