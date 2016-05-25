@@ -44,7 +44,7 @@
  * towards the ideal frequency and slower after it has passed it. Similarly,
  * lowering the frequency towards the ideal frequency is faster than below it.
  */
-#define DEFAULT_AWAKE_IDEAL_FREQ 768000
+#define DEFAULT_AWAKE_IDEAL_FREQ 1401600
 static unsigned int awake_ideal_freq;
 
 /*
@@ -53,7 +53,7 @@ static unsigned int awake_ideal_freq;
  * that practically when sleep_ideal_freq==0 the awake_ideal_freq is used
  * also when suspended).
  */
-#define DEFAULT_SLEEP_IDEAL_FREQ 122880
+#define DEFAULT_SLEEP_IDEAL_FREQ 600000
 static unsigned int sleep_ideal_freq;
 
 /*
@@ -102,7 +102,7 @@ static unsigned long down_rate_us;
  * The frequency to set when waking up from sleep.
  * When sleep_ideal_freq=0 this will have no effect.
  */
-#define DEFAULT_SLEEP_WAKEUP_FREQ 768000
+#define DEFAULT_SLEEP_WAKEUP_FREQ 1209600
 static unsigned int sleep_wakeup_freq;
 
 /*
