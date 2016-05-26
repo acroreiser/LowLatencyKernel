@@ -568,6 +568,10 @@ else
 KBUILD_CFLAGS	+= -O2 -Wno-maybe-uninitialized
 endif
 
+ifdef CONFIG_CC_USE_PIPE
+KBUILD_CFLAGS	+= -pipe
+endif
+
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
 ifneq ($(CONFIG_FRAME_WARN),0)
