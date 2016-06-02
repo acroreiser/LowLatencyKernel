@@ -87,7 +87,7 @@ static unsigned long down_rate_us;
  * When ramping up frequency with no idle cycles jump to at least this frequency.
  * Zero disables. Set a very high value to jump to policy max freqeuncy.
  */
-#define DEFAULT_UP_MIN_FREQ 1900000
+#define DEFAULT_UP_MIN_FREQ 1017600
 static unsigned int up_min_freq;
 
 /*
@@ -103,10 +103,10 @@ static unsigned int sleep_max_freq;
  * The frequency to set when waking up from sleep.
  * When sleep_max_freq=0 this will have no effect.
  */
-#define DEFAULT_SLEEP_WAKEUP_FREQ 1017600
+#define DEFAULT_SLEEP_WAKEUP_FREQ 1401600
 static unsigned int sleep_wakeup_freq;
 
-#define UP_THRESHOLD_FREQ 1800000
+#define UP_THRESHOLD_FREQ 1401600
 static unsigned int threshold_freq;
 
 /*
@@ -114,10 +114,10 @@ static unsigned int threshold_freq;
  * go below this frequency.
  * Set awake_min_freq=0 to disable this behavior.
  */
-#define DEFAULT_AWAKE_MIN_FREQ 245760
+#define DEFAULT_AWAKE_MIN_FREQ 368640
 static unsigned int awake_min_freq;
 
-static unsigned int suspendfreq = 200000;
+static unsigned int suspendfreq = 245760;
 
 /*
  * Sampling rate, I highly recommend to leave it at 2.
@@ -142,18 +142,18 @@ static unsigned int ramp_down_step;
 /*
  * CPU freq will be increased if measured load > max_cpu_load;
  */
-#define DEFAULT_MAX_CPU_LOAD 70
+#define DEFAULT_MAX_CPU_LOAD 80
 static unsigned long max_cpu_load;
 
-#define DEFAULT_X_CPU_LOAD 80
+#define DEFAULT_X_CPU_LOAD 90
 static unsigned long x_cpu_load;
 
 /*
  * CPU freq will be decreased if measured load < min_cpu_load;
  */
-#define DEFAULT_MIN_CPU_LOAD 35
+#define DEFAULT_MIN_CPU_LOAD 40
 static unsigned long min_cpu_load;
-#define RAPID_MIN_CPU_LOAD 10
+#define RAPID_MIN_CPU_LOAD 20
 static unsigned long rapid_min_cpu_load;
 
 
@@ -344,7 +344,7 @@ static void cpufreq_brazilianwax_freq_change_time_work(struct work_struct *work)
 					relation = CPUFREQ_RELATION_H;
 				}
 			} else {
-				new_freq = policy->cur + 150000;
+				new_freq = policy->cur + 128000;
 				if (new_freq > suspendfreq) new_freq = suspendfreq;
 				relation = CPUFREQ_RELATION_H;
 			}
@@ -383,7 +383,7 @@ static void cpufreq_brazilianwax_freq_change_time_work(struct work_struct *work)
 			}
 			if (relation == CPUFREQ_RELATION_H && old_freq == policy->cur) {
 				// step up one more time
-				new_freq = new_freq + 100000;
+				new_freq = new_freq + 128000;
 				__cpufreq_driver_target(policy, new_freq, relation);
 				this_brazilianwax->freq_change_time_in_idle =
 						get_cpu_idle_time_us(cpu,&this_brazilianwax->freq_change_time);
