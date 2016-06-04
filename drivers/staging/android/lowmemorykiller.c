@@ -105,7 +105,8 @@ static bool protected_apps(char *comm)
 			strcmp(comm, "enmod.trebuchet") == 0 || // Trebuchet
 			strcmp(comm, "coilsw.launcher") == 0 || // Nova Launcher
 			strcmp(comm, "roman.dashclock") == 0 || // DashClock Widget
-			strcmp(comm, "system:ui") == 0)
+			strcmp(comm, "m.android.phone") == 0 || // Phone
+			strcmp(comm, "rver.telecom:ui") == 0)   // Telecom UI
 		return 1;
 	return 0;
 }
