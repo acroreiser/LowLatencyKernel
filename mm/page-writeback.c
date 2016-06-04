@@ -68,8 +68,11 @@ static long ratelimit_pages = 32;
 /*
  * Start background writeback (via writeback threads) at this percentage
  */
+#ifdef CONFIG_DECREASE_DIRTY_RATIO
 int dirty_background_ratio = 1;
-
+#else
+int dirty_background_ratio = 10;
+#endif
 /*
  * dirty_background_bytes starts at 0 (disabled) so that it is a function of
  * dirty_background_ratio * the amount of dirtyable memory
@@ -85,8 +88,11 @@ int vm_highmem_is_dirtyable;
 /*
  * The generator of dirty data starts writeback at this percentage
  */
+#ifdef CONFIG_DECREASE_DIRTY_RATIO
 int vm_dirty_ratio = 1;
-
+#else
+int vm_dirty_ratio = 20;
+#endif
 /*
  * vm_dirty_bytes starts at 0 (disabled) so that it is a function of
  * vm_dirty_ratio * the amount of dirtyable memory
@@ -357,12 +363,17 @@ int dirty_background_ratio_handler(struct ctl_table *table, int write,
 		void __user *buffer, size_t *lenp,
 		loff_t *ppos)
 {
+#ifndef CONFIG_DIRTY_RATIO_HARDCODE
 	int ret;
 
 	ret = proc_dointvec_minmax(table, write, buffer, lenp, ppos);
 	if (ret == 0 && write)
 		dirty_background_bytes = 0;
 	return ret;
+#else
+	dirty_background_bytes = 0;
+	return dirty_background_ratio;
+#endif
 }
 
 int dirty_background_bytes_handler(struct ctl_table *table, int write,
@@ -381,6 +392,7 @@ int dirty_ratio_handler(struct ctl_table *table, int write,
 		void __user *buffer, size_t *lenp,
 		loff_t *ppos)
 {
+#ifndef CONFIG_DIRTY_RATIO_HARDCODE
 	int old_ratio = vm_dirty_ratio;
 	int ret;
 
@@ -390,6 +402,10 @@ int dirty_ratio_handler(struct ctl_table *table, int write,
 		vm_dirty_bytes = 0;
 	}
 	return ret;
+#else
+	vm_dirty_bytes = 0;
+	return vm_dirty_ratio;
+#endif
 }
 
 int dirty_bytes_handler(struct ctl_table *table, int write,
