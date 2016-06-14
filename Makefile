@@ -572,6 +572,11 @@ ifdef CONFIG_CC_USE_PIPE
 KBUILD_CFLAGS	+= -pipe
 endif
 
+ifeq ($(CONFIG_A8_FOR_SCORPION),y)
+KBUILD_CFLAGS	+= -mcpu=cortex-a8 -mtune=cortex-a8
+KBUILD_AFLAGS	+= -mcpu=cortex-a8 -mtune=cortex-a8
+endif
+
 include $(srctree)/arch/$(SRCARCH)/Makefile
 
 ifneq ($(CONFIG_FRAME_WARN),0)
