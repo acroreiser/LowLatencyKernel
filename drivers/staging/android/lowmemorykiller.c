@@ -100,13 +100,23 @@ static bool avoid_to_kill(uid_t uid)
 static bool protected_apps(char *comm)
 {
 	if (strcmp(comm, "d.process.acore") == 0 ||
-			strcmp(comm, "ndroid.systemui") == 0 ||
 			strcmp(comm, "d.process.media") == 0 ||
+#ifdef CONFIG_LMK_LOCK_TREBUCHET
 			strcmp(comm, "enmod.trebuchet") == 0 || // Trebuchet
+#endif
+#ifdef CONFIG_LMK_LOCK_NOVA
 			strcmp(comm, "coilsw.launcher") == 0 || // Nova Launcher
-			strcmp(comm, "roman.dashclock") == 0 || // DashClock Widget
+#endif
 			strcmp(comm, "m.android.phone") == 0 || // Phone
-			strcmp(comm, "rver.telecom:ui") == 0)   // Telecom UI
+			strcmp(comm, "rver.telecom:ui") == 0 ||  // Telecom UI
+
+#ifdef CONFIG_LMK_LOCK_GMS
+/* Google Play Services */
+			strcmp(comm, "e.process.gapps") == 0 ||
+			strcmp(comm, "gle.android.gms") == 0 ||
+			strcmp(comm, ".gms.persistent") == 0 ||
+#endif	
+			strcmp(comm, "ndroid.systemui") == 0)
 		return 1;
 	return 0;
 }
