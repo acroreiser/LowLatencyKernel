@@ -1,4 +1,4 @@
-/* Copyright (c) 2008-2014, The Linux Foundation. All rights reserved.
+/* Copyright (c) 2008-2015, The Linux Foundation. All rights reserved.
  *
  * This program is free software; you can redistribute it and/or modify
  * it under the terms of the GNU General Public License version 2 and
@@ -999,6 +999,7 @@ long diagchar_ioctl(struct file *filp,
 				driver->dci_client_tbl[i].received_events = 0;
 				break;
 			}
+			driver->socket_process = NULL;
 		}
 		kfree(dci_params);
 		mutex_unlock(&driver->dci_mutex);
