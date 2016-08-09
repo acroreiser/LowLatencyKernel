@@ -573,7 +573,7 @@ KBUILD_CFLAGS	+= -pipe
 endif
 
 ifdef CONFIG_CC_USE_GRAPHITE
-KBUILD_CFLAGS	+= -fgraphite -fgraphite-identity
+KBUILD_CFLAGS	+= -fgraphite -fgraphite-identity -floop-interchange -floop-block -floop-strip-mine
 endif
 
 ifeq ($(CONFIG_A8_FOR_SCORPION),y)
