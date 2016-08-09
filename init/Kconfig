@@ -965,6 +965,8 @@ config CC_OPTIMIZE_FOR_SIZE
 config CC_USE_PIPE
 	bool "Use pipes to speed up build"
 
+config CC_USE_GRAPHITE
+	bool "Use GCC Graphite optimization"
 
 config SYSCTL
 	bool
