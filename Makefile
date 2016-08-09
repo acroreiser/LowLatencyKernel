@@ -573,8 +573,8 @@ KBUILD_CFLAGS	+= -pipe
 endif
 
 ifeq ($(CONFIG_A8_FOR_SCORPION),y)
-KBUILD_CFLAGS	+= -mcpu=cortex-a8 -mtune=cortex-a8
-KBUILD_AFLAGS	+= -mcpu=cortex-a8 -mtune=cortex-a8
+KBUILD_CFLAGS	+= -mcpu=cortex-a8 -mtune=cortex-a8 --param l1-cache-size=32 --param l2-cache-size=256
+KBUILD_AFLAGS	+= -mcpu=cortex-a8 -mtune=cortex-a8 --param l1-cache-size=32 --param l2-cache-size=256
 endif
 
 include $(srctree)/arch/$(SRCARCH)/Makefile
