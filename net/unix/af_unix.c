@@ -1693,7 +1693,7 @@ restart_locked:
 		if (err)
 			goto out_unlock;
 	}
-
+	
 	if (unlikely(unix_peer(other) != sk && unix_recvq_full(other))) {
 		if (timeo) {
 			timeo = unix_wait_for_peer(other, timeo);
