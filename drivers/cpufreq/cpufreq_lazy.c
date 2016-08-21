@@ -66,7 +66,11 @@ static
 struct cpufreq_governor cpufreq_gov_lazy = {
     .name                   = "lazy",
     .governor               = cpufreq_governor_dbs,
-    .max_transition_latency = TRANSITION_LATENCY_LIMIT,
+#if defined(CONFIG_ARCH_MSM_SCORPION)
+	.max_transition_latency = 8000000,
+#else
+	.max_transition_latency = 10000000,
+#endif
     .owner                  = THIS_MODULE,
 };
 

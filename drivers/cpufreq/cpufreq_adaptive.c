@@ -66,7 +66,11 @@ static
 struct cpufreq_governor cpufreq_gov_adaptive = {
 	.name                   = "adaptive",
 	.governor               = cpufreq_governor_dbs,
-	.max_transition_latency = TRANSITION_LATENCY_LIMIT,
+#if defined(CONFIG_ARCH_MSM_SCORPION)
+	.max_transition_latency = 8000000,
+#else
+	.max_transition_latency = 10000000,
+#endif
 	.owner                  = THIS_MODULE,
 };
 
@@ -117,13 +121,13 @@ static unsigned int target_freq;
 static DEFINE_MUTEX(short_timer_mutex);
 
 /* Go to max speed when CPU load at or above this value. */
-#define DEFAULT_GO_MAXSPEED_LOAD 60
+#define DEFAULT_GO_MAXSPEED_LOAD 85
 static unsigned long go_maxspeed_load;
 
-#define DEFAULT_KEEP_MINSPEED_LOAD 30
+#define DEFAULT_KEEP_MINSPEED_LOAD 24
 static unsigned long keep_minspeed_load;
 
-#define DEFAULT_STEPUP_LOAD 10
+#define DEFAULT_STEPUP_LOAD 8
 static unsigned long step_up_load;
 
 static struct dbs_tuners {
