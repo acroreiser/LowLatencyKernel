@@ -145,12 +145,12 @@ fail_dal_attach_detach:
 	return rc;
 }
 
-int axi_free(mode)
+int axi_free(int mode)
 {
 	return __axi_free(mode);
 }
 
-int axi_allocate(mode)
+int axi_allocate(int mode)
 {
 	return __axi_allocate(mode);
 }
