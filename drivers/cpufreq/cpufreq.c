@@ -30,6 +30,8 @@
 #include <linux/mutex.h>
 #include <linux/syscore_ops.h>
 
+#include <linux/earlysuspend.h>
+
 #include <trace/events/power.h>
 
 /**
@@ -51,6 +53,9 @@ static DEFINE_SPINLOCK(cpufreq_driver_lock);
 
 static struct kset *cpufreq_kset;
 static struct kset *cpudev_kset;
+
+static unsigned int saved_pol_min = 0;
+static unsigned int saved_pol_max = 0;
 
 /*
  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
@@ -1947,6 +1952,50 @@ no_policy:
 }
 EXPORT_SYMBOL(cpufreq_update_policy);
 
+static void suspend_policy(bool ps)
+{
+	struct cpufreq_policy *data = cpufreq_cpu_get(0);
+	struct cpufreq_policy policy;
+
+	if(ps == 1)
+	{
+		memcpy(&policy, data, sizeof(struct cpufreq_policy));
+		policy.min = 245760;
+		policy.max = 768000;
+		policy.policy = data->user_policy.policy;
+		policy.governor = data->user_policy.governor;
+		
+		if(data->user_policy.max == 768000)
+				return;
+		
+		saved_pol_min = data->user_policy.min;
+		saved_pol_max = data->user_policy.max;
+	}
+	else
+	{
+		memcpy(&policy, data, sizeof(struct cpufreq_policy));
+		policy.min = saved_pol_min;
+		policy.max = saved_pol_max;
+		policy.policy = data->user_policy.policy;
+		policy.governor = data->user_policy.governor;
+	}
+	__cpufreq_set_policy(data, &policy);
+}
+
+static void cpufreq_early_suspend(struct early_suspend *handler) {
+     suspend_policy(1);
+}
+
+static void cpufreq_late_resume(struct early_suspend *handler) {
+     suspend_policy(0);
+}
+
+static struct early_suspend cpufreq_power_suspend = {
+        .suspend = cpufreq_early_suspend,
+        .resume = cpufreq_late_resume,
+        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB,
+};
+
 static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
 					unsigned long action, void *hcpu)
 {
@@ -2091,7 +2140,9 @@ static int __init cpufreq_core_init(void)
 
 	if (cpufreq_disabled())
 		return -ENODEV;
-
+	
+	register_early_suspend(&cpufreq_power_suspend);
+	
 	for_each_possible_cpu(cpu) {
 		per_cpu(cpufreq_policy_cpu, cpu) = -1;
 		init_rwsem(&per_cpu(cpu_policy_rwsem, cpu));
