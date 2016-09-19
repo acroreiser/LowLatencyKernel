@@ -50,6 +50,15 @@ config CPU_FREQ_VDD_LEVELS
 	help
 	  CPU VDD levels sysfs interface
 
+
+config SCORPIONUNI_SCREENOFF_POWERSAVING
+	bool "Powersave CPU mode when screen is off"
+	depends on ARCH_MSM7X30
+	default n
+	help
+	  Reduce CPU frequency when display is off for powersaving.
+	  Only for singlecore Qualcomm Scorpion CPUs. (LLK) 
+	
 choice
 	prompt "Default CPUFreq governor"
 	default CPU_FREQ_DEFAULT_GOV_USERSPACE if CPU_FREQ_SA1100 || CPU_FREQ_SA1110
