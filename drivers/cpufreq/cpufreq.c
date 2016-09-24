@@ -2071,7 +2071,7 @@ static void suspend_policy(bool ps)
 	
 	if(ps == 1)
 	{
-		if(data->max <= data->s_max)
+		if(data->cur == data->n_max)
 				return;
 		
 		data->n_min = data->min;
@@ -2084,6 +2084,8 @@ static void suspend_policy(bool ps)
 	{
 		policy.min = data->n_min;
 		policy.max = data->n_max;
+		policy.user_policy.min = data->n_min;
+		policy.user_policy.max = data->n_max;
 	}
 
 	policy.policy = data->user_policy.policy;
@@ -2103,7 +2105,7 @@ static void cpufreq_late_resume(struct early_suspend *handler) {
 static struct early_suspend cpufreq_power_suspend = {
         .suspend = cpufreq_early_suspend,
         .resume = cpufreq_late_resume,
-        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB,
+        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
 };
 #endif
 
