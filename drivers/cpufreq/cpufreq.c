@@ -30,9 +30,7 @@
 #include <linux/mutex.h>
 #include <linux/syscore_ops.h>
 
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
 #include <linux/earlysuspend.h>
-#endif
 
 #include <trace/events/power.h>
 
@@ -55,6 +53,9 @@ static DEFINE_SPINLOCK(cpufreq_driver_lock);
 
 static struct kset *cpufreq_kset;
 static struct kset *cpudev_kset;
+
+static unsigned int saved_pol_min = 0;
+static unsigned int saved_pol_max = 0;
 
 /*
  * cpu_policy_rwsem is a per CPU reader-writer semaphore designed to cure
@@ -419,11 +420,6 @@ show_one(cpuinfo_transition_latency, cpuinfo.transition_latency);
 show_one(scaling_min_freq, min);
 show_one(scaling_max_freq, max);
 show_one(cpu_utilization, util);
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
-show_one(suspend_battery_saving,suspend_bs);
-show_one(suspend_min_freq, s_min);
-show_one(suspend_max_freq, s_max);
-#endif
 
 static ssize_t show_scaling_cur_freq(
 	struct cpufreq_policy *policy, char *buf)
@@ -478,6 +474,7 @@ static ssize_t show_cpuinfo_cur_freq(struct cpufreq_policy *policy,
 		return sprintf(buf, "<unknown>");
 	return sprintf(buf, "%u\n", cur_freq);
 }
+
 
 /**
  * show_scaling_governor - show the current policy for the specified CPU
@@ -708,92 +705,6 @@ static ssize_t show_bios_limit(struct cpufreq_policy *policy, char *buf)
 	return sprintf(buf, "%u\n", policy->cpuinfo.max_freq);
 }
 
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
-static ssize_t store_suspend_battery_saving(struct cpufreq_policy *policy,
-					const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int suspend_bs;
-	
-	struct cpufreq_policy new_policy;
-	
-	cpufreq_get_policy(&new_policy, policy->cpu);
-
-	ret = sscanf(buf,"%u",&suspend_bs);
-	if (ret != 1)							\
-		return -EINVAL;	
-
-	if(suspend_bs > 1 || suspend_bs < 0)
-		return -EINVAL;
-	
-	if(suspend_bs == 1)
-		policy->suspend_bs = 1;
-	else
-		policy->suspend_bs = 0;
-
-	policy->user_policy.policy = policy->policy;
-	policy->user_policy.governor = policy->governor;
-	
-	__cpufreq_set_policy(policy, &new_policy);
-	
-	return count;
-}
-
-static ssize_t store_suspend_max_freq(struct cpufreq_policy *policy,
-					const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int s_max;
-	
-	struct cpufreq_policy new_policy;
-	
-	cpufreq_get_policy(&new_policy, policy->cpu);
-
-	ret = sscanf(buf,"%u",&s_max);
-	if (ret != 1)							\
-		return -EINVAL;	
-
-	if(s_max < 1)
-		return -EINVAL;
-	
-	policy->s_max = s_max;
-
-	policy->user_policy.policy = policy->policy;
-	policy->user_policy.governor = policy->governor;
-	
-	__cpufreq_set_policy(policy, &new_policy);
-	
-	return count;
-}
-
-static ssize_t store_suspend_min_freq(struct cpufreq_policy *policy,
-					const char *buf, size_t count)
-{
-	unsigned int ret = -EINVAL;
-	unsigned int s_min;
-	
-	struct cpufreq_policy new_policy;
-	
-	cpufreq_get_policy(&new_policy, policy->cpu);
-
-	ret = sscanf(buf,"%u",&s_min);
-	if (ret != 1)							\
-		return -EINVAL;	
-
-	if(s_min < 1)
-		return -EINVAL;
-	
-	policy->s_min = s_min;
-
-	policy->user_policy.policy = policy->policy;
-	policy->user_policy.governor = policy->governor;
-	
-	__cpufreq_set_policy(policy, &new_policy);
-	
-	return count;
-}
-#endif
-
 cpufreq_freq_attr_ro_perm(cpuinfo_cur_freq, 0400);
 cpufreq_freq_attr_ro(cpuinfo_min_freq);
 cpufreq_freq_attr_ro(cpuinfo_max_freq);
@@ -807,11 +718,6 @@ cpufreq_freq_attr_ro(affected_cpus);
 cpufreq_freq_attr_ro(cpu_utilization);
 cpufreq_freq_attr_rw(scaling_min_freq);
 cpufreq_freq_attr_rw(scaling_max_freq);
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
-cpufreq_freq_attr_rw(suspend_battery_saving);
-cpufreq_freq_attr_rw(suspend_min_freq);
-cpufreq_freq_attr_rw(suspend_max_freq);
-#endif
 cpufreq_freq_attr_rw(scaling_governor);
 cpufreq_freq_attr_rw(scaling_setspeed);
 #ifdef CONFIG_CPU_FREQ_VDD_LEVELS
@@ -824,11 +730,6 @@ static struct attribute *default_attrs[] = {
 	&cpuinfo_transition_latency.attr,
 	&scaling_min_freq.attr,
 	&scaling_max_freq.attr,
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
-	&suspend_battery_saving.attr,
-	&suspend_min_freq.attr,
-	&suspend_max_freq.attr,
-#endif
 	&affected_cpus.attr,
 	&cpu_utilization.attr,
 	&related_cpus.attr,
@@ -1208,13 +1109,6 @@ static int cpufreq_add_dev(struct device *dev, struct subsys_interface *sif)
 	policy->user_policy.min = policy->min;
 	policy->user_policy.max = policy->max;
 
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
-	policy->n_min = policy->min;
-	policy->n_max = policy->max;
-	policy->s_min = 245760;
-	policy->s_max = 768000;
-#endif
-	
 	blocking_notifier_call_chain(&cpufreq_policy_notifier_list,
 				     CPUFREQ_START, policy);
 
@@ -2058,56 +1952,49 @@ no_policy:
 }
 EXPORT_SYMBOL(cpufreq_update_policy);
 
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
 static void suspend_policy(bool ps)
 {
 	struct cpufreq_policy *data = cpufreq_cpu_get(0);
 	struct cpufreq_policy policy;
-	
-	memcpy(&policy, data, sizeof(struct cpufreq_policy));
-	
-	if(data->suspend_bs == 0)
-		return;
-	
+
 	if(ps == 1)
 	{
-		if(data->cur == data->n_max)
+		memcpy(&policy, data, sizeof(struct cpufreq_policy));
+		policy.min = 245760;
+		policy.max = 768000;
+		policy.policy = data->user_policy.policy;
+		policy.governor = data->user_policy.governor;
+		
+		if(data->user_policy.max == 768000)
 				return;
 		
-		data->n_min = data->min;
-		data->n_max = data->max;
-		
-		policy.min = data->s_min;
-		policy.max = data->s_max;
+		saved_pol_min = data->user_policy.min;
+		saved_pol_max = data->user_policy.max;
 	}
 	else
 	{
-		policy.min = data->n_min;
-		policy.max = data->n_max;
-		policy.user_policy.min = data->n_min;
-		policy.user_policy.max = data->n_max;
+		memcpy(&policy, data, sizeof(struct cpufreq_policy));
+		policy.min = saved_pol_min;
+		policy.max = saved_pol_max;
+		policy.policy = data->user_policy.policy;
+		policy.governor = data->user_policy.governor;
 	}
-
-	policy.policy = data->user_policy.policy;
-	policy.governor = data->user_policy.governor;
-
 	__cpufreq_set_policy(data, &policy);
 }
 
 static void cpufreq_early_suspend(struct early_suspend *handler) {
-    	suspend_policy(1);
+     suspend_policy(1);
 }
 
 static void cpufreq_late_resume(struct early_suspend *handler) {
-    	suspend_policy(0);
+     suspend_policy(0);
 }
 
 static struct early_suspend cpufreq_power_suspend = {
         .suspend = cpufreq_early_suspend,
         .resume = cpufreq_late_resume,
-        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB + 1,
+        .level = EARLY_SUSPEND_LEVEL_DISABLE_FB,
 };
-#endif
 
 static int __cpuinit cpufreq_cpu_callback(struct notifier_block *nfb,
 					unsigned long action, void *hcpu)
@@ -2253,7 +2140,9 @@ static int __init cpufreq_core_init(void)
 
 	if (cpufreq_disabled())
 		return -ENODEV;
-		
+	
+	register_early_suspend(&cpufreq_power_suspend);
+	
 	for_each_possible_cpu(cpu) {
 		per_cpu(cpufreq_policy_cpu, cpu) = -1;
 		init_rwsem(&per_cpu(cpu_policy_rwsem, cpu));
@@ -2269,10 +2158,6 @@ static int __init cpufreq_core_init(void)
 
 	register_syscore_ops(&cpufreq_syscore_ops);
 
-#ifdef CONFIG_SCORPIONUNI_SCREENOFF_POWERSAVING
-	register_early_suspend(&cpufreq_power_suspend);
-#endif
-	
 	return 0;
 }
 core_initcall(cpufreq_core_init);
