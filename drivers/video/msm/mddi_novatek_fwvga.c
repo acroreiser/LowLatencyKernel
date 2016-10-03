@@ -88,21 +88,6 @@ static struct device_attribute novatek_dev_attr_type = {
 	.show = novatek_type_show,
 };
 
-static void hr_msleep(int ms)
-{
-	struct timespec req_time;
-	long ret;
-
-	req_time.tv_sec = ms / 1000;
-	req_time.tv_nsec = (ms % 1000) * 1000000;
-
-	ret = hrtimer_nanosleep(&req_time, NULL, HRTIMER_MODE_REL,
-							CLOCK_MONOTONIC);
-	if (ret != 0)
-		printk(KERN_ERR "%s: nanosleep failed, ret = %ld\n", __func__,
-									ret);
-}
-
 static void novatek_controller_execute(const struct novatek_reg_set *rs)
 {
 	int n;
