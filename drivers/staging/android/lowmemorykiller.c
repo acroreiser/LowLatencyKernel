@@ -61,12 +61,6 @@ static int lowmem_adj[6] = {
 	13,
 	15,
 };
-
-#ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_PROTECT_4_APPS
-static unsigned int prot_apps_active = 0;
-static char protected_app_list[4][16];
-#endif
-
 static int lowmem_adj_size = 6;
 static int lowmem_minfree[6] = {
 	 3 *  512,	/* Foreground App: 	6 MB	*/
@@ -105,14 +99,6 @@ static bool avoid_to_kill(uid_t uid)
 
 static bool protected_apps(char *comm)
 {
-#ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_PROTECT_4_APPS
-	if (prot_apps_active == 1)
-	{
-		if (strcmp(comm, protected_app_list[0]) == 0 || strcmp(comm, protected_app_list[1]) == 0 || strcmp(comm, protected_app_list[2]) == 0 || strcmp(comm, protected_app_list[3]) == 0)
-			return 1;
-	}
-#endif
-
 	if (strcmp(comm, "d.process.acore") == 0 ||
 			strcmp(comm, "d.process.media") == 0 ||
 #ifdef CONFIG_LMK_LOCK_TREBUCHET
@@ -773,14 +759,6 @@ module_param_array_named(minfree, lowmem_minfree, uint, &lowmem_minfree_size,
 			 S_IRUGO | S_IWUSR);
 module_param_named(debug_level, lowmem_debug_level, uint, S_IRUGO | S_IWUSR);
 module_param_named(lmk_fast_run, lmk_fast_run, int, S_IRUGO | S_IWUSR);
-
-#ifdef CONFIG_ANDROID_LOW_MEMORY_KILLER_PROTECT_4_APPS
-module_param_named(userspace_protect_4_apps, prot_apps_active, uint, S_IRUGO | S_IWUSR);
-module_param_string(protected_app_1, protected_app_list[0], 16, S_IRUGO | S_IWUSR);
-module_param_string(protected_app_2, protected_app_list[1], 16, S_IRUGO | S_IWUSR);
-module_param_string(protected_app_3, protected_app_list[2], 16, S_IRUGO | S_IWUSR);
-module_param_string(protected_app_4, protected_app_list[3], 16, S_IRUGO | S_IWUSR);
-#endif
 
 module_init(lowmem_init);
 module_exit(lowmem_exit);

@@ -82,27 +82,6 @@ config ANDROID_LMK_ADJ_RBTREE
  	  Use oom_score_adj rbtree to select the best process to kill
  	  when system in low memory status.
 
-config ANDROID_LOW_MEMORY_KILLER_PROTECT_4_APPS
- 	bool "Protect 4 apps selected by user from killing"
- 	depends on ANDROID_LOW_MEMORY_KILLER
- 	default n
- 	---help---
- 	  Protect 4 apps from killing.
-	  By default disabled.
-	  Enabling protection:
-
-	  root# echo 1 > /sys/module/lowmemorykiller/parameters/userspace_protect_4_apps
-	  
-	  Set protected apps:
-	  
-	  root# echo "comm" > /sys/module/lowmemorykiller/parameters/protected_app_${1-4}
-
-	  "comm" is last 15 letters of package name. 
-	  For example, Nova Launcher has package name "com.teslacoilsw.launcher", his "comm" value is "coilsw.launcher".
-	  Use this command by root to protect Nova Launcher from killing by LMK
-	  
-	  echo "coilsw.launcher" > /sys/module/lowmemorykiller/parameters/protected_app_1
-
 config LMK_LOCK_TREBUCHET
  	bool "Lock Trebuchet in memory"
  	depends on ANDROID_LOW_MEMORY_KILLER
